@@ -1,0 +1,61 @@
+======================================
+CBank - BankSystem Integration Testing
+SOEN 6611 | D2 | Problem 4(b)
+======================================
+
+TC-B01 - Valid customer login
+Expected: Alice Smith authenticated
+Actual  : Alice Smith authenticated
+Result  : PASS
+
+TC-B02 - Invalid PIN
+Expected: AuthenticationException
+Actual  : AuthenticationException
+Result  : PASS
+
+TC-B03 - Withdraw CAD 200
+Expected: Account = CAD 1300.00; Vault = CAD 4800.00
+Actual  : Account = CAD 1300.00; Vault = CAD 4800.00
+Result  : PASS
+
+TC-B04 - Insufficient account funds
+Expected: InsufficientFundsException; balances unchanged
+Actual  : InsufficientFundsException; Account = CAD 1300.00; Vault = CAD 4800.00
+Result  : PASS
+
+TC-B05 - Deposit CAD 100
+Expected: Account = CAD 1400.00; Vault = CAD 4900.00
+Actual  : Account = CAD 1400.00; Vault = CAD 4900.00
+Result  : PASS
+
+TC-B06 - Change PIN to three digits
+Expected: InvalidPinException
+Actual  : InvalidPinException
+Result  : PASS
+
+TC-B07 - Change PIN to 4321
+Expected: New PIN accepted; old PIN rejected
+Actual  : New PIN accepted; old PIN rejected
+Result  : PASS
+
+TC-B08 - Customer requests audit logs
+Expected: SecurityException
+Actual  : SecurityException
+Result  : PASS
+
+TC-B09 - Customer replenishes vault
+Expected: SecurityException; vault unchanged
+Actual  : SecurityException; vault unchanged
+Result  : PASS
+
+TC-B10 - Admin replenishes CAD 500
+Expected: Vault = CAD 5400.00
+Actual  : Vault = CAD 5400.00
+Result  : PASS
+
+======================================
+TEST EXECUTION SUMMARY
+Total tests : 10
+Passed      : 10
+Failed      : 0
+======================================
