@@ -1,12 +1,15 @@
 package cbank;
 
+import cbank.account.Account;
+import init.AccountDatabase;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class BankSystem {
     private static BankSystem instance;
 
-    private final Map<String, Account> accounts = new HashMap<>();
+    private final Map<String, Account> accounts;
     private final AuditLogger logger = new AuditLogger();
     private final CurrencyConverter converter = new CurrencyConverter();
 
@@ -14,11 +17,7 @@ public class BankSystem {
     private Account currentSessionUser = null;
 
     private BankSystem() {
-        // Sample accounts
-        accounts.put("1001", new Account("1001", "Alice Smith", "1234", 1500.00, false));
-        accounts.put("1002", new Account("1002", "Bob Jones", "5678", 500.00, false));
-        // Admin account
-        accounts.put("9999", new Account("9999", "System Admin", "0000", 0.00, true));
+        accounts = AccountDatabase.initialDatabase();
     }
 
     public static synchronized BankSystem getInstance() {
@@ -48,7 +47,12 @@ public class BankSystem {
     public double getMachineCashVaultCad() { return machineCashVaultCad; }
     public CurrencyConverter getConverter() { return converter; }
 
-    public void withdrawCash(double amountCad) throws CustomExceptions.InsufficientFundsException, CustomExceptions.VaultDepletedException {
+
+    public void withdrawCash(double amountCad)
+            throws CustomExceptions.InsufficientFundsException,
+            CustomExceptions.VaultDepletedException,
+            CustomExceptions.InvalidTransactionException {
+
         if (amountCad > machineCashVaultCad) {
             logger.log(currentSessionUser.getAccountNumber(), "WITHDRAWAL", amountCad, "FAILED_VAULT_LIMIT");
             throw new CustomExceptions.VaultDepletedException("ABM has insufficient physical cash reserves.");
@@ -58,9 +62,11 @@ public class BankSystem {
         logger.log(currentSessionUser.getAccountNumber(), "WITHDRAWAL", amountCad, "SUCCESS");
     }
 
-    public void depositCash(double amount, String currency) {
+    public void depositCash(double amount, String currency) throws CustomExceptions.InvalidTransactionException {
         double convertedCad = converter.convertToCad(amount, currency);
         currentSessionUser.deposit(convertedCad);
+
+        //Only CAD Cash are considered added to the ABM vault
         if ("CAD".equalsIgnoreCase(currency)) {
             machineCashVaultCad += amount;
         }

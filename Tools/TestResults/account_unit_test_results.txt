@@ -19,23 +19,23 @@ Actual  : InsufficientFundsException; Balance = CAD 1500.00
 Result  : PASS
 
 TC-A04 - Negative withdrawal of CAD -100
-Expected: IllegalArgumentException; balance = CAD 1500.00
-Actual  : IllegalArgumentException; Balance = CAD 1500.00
+Expected: InvalidTransactionException; balance = CAD 1500.00
+Actual  : InvalidTransactionException; Balance = CAD 1500.00
 Result  : PASS
 
 TC-A05 - Zero withdrawal
 Expected: IllegalArgumentException; balance = CAD 1500.00
-Actual  : IllegalArgumentException; Balance = CAD 1500.00
+Actual  : InvalidTransactionException; Balance = CAD 1500.00
 Result  : PASS
 
 TC-A06 - Negative deposit of CAD -100
 Expected: IllegalArgumentException; balance = CAD 1500.00
-Actual  : IllegalArgumentException; Balance = CAD 1500.00
+Actual  : InvalidTransactionException; Balance = CAD 1500.00
 Result  : PASS
 
 TC-A07 - Zero deposit
-Expected: IllegalArgumentException; balance = CAD 1500.00
-Actual  : IllegalArgumentException; Balance = CAD 1500.00
+Expected: InvalidTransactionException; balance = CAD 1500.00
+Actual  : InvalidTransactionException; Balance = CAD 1500.00
 Result  : PASS
 
 TC-A08 - PIN validation

@@ -1,5 +1,8 @@
 
 package cbank;
+import cbank.account.Account;
+import cbank.account.IndividualAccount;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -124,12 +127,12 @@ public class AccountTest {
 
         // TC-A04: Reject negative withdrawal amounts.
         run("TC-A04", "Negative withdrawal of CAD -100",
-                "IllegalArgumentException; balance = CAD 1500.00",
+                "InvalidTransactionException; balance = CAD 1500.00",
                 () -> {
                     Account account = createTestAccount();
 
                     String exception = expectException(
-                            IllegalArgumentException.class,
+                            CustomExceptions.InvalidTransactionException.class,
                             () -> account.withdraw(-100)
                     );
 
@@ -144,7 +147,7 @@ public class AccountTest {
                     Account account = createTestAccount();
 
                     String exception = expectException(
-                            IllegalArgumentException.class,
+                            CustomExceptions.InvalidTransactionException.class,
                             () -> account.withdraw(0)
                     );
 
@@ -159,7 +162,7 @@ public class AccountTest {
                     Account account = createTestAccount();
 
                     String exception = expectException(
-                            IllegalArgumentException.class,
+                            CustomExceptions.InvalidTransactionException.class,
                             () -> account.deposit(-100)
                     );
 
@@ -169,12 +172,12 @@ public class AccountTest {
 
         // TC-A07: Reject zero-value deposits.
         run("TC-A07", "Zero deposit",
-                "IllegalArgumentException; balance = CAD 1500.00",
+                "InvalidTransactionException; balance = CAD 1500.00",
                 () -> {
                     Account account = createTestAccount();
 
                     String exception = expectException(
-                            IllegalArgumentException.class,
+                            CustomExceptions.InvalidTransactionException.class,
                             () -> account.deposit(0)
                     );
 
@@ -220,7 +223,7 @@ public class AccountTest {
      */
     private static Account createTestAccount() {
         return new Account(
-                "1001", "Alice Smith", "1234", 1500.00, false
+                "1001", "Alice Smith", "1234", 1500.00, new IndividualAccount()
         );
     }
 
