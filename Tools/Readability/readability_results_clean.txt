@@ -1,0 +1,18 @@
+[INFO] RiTa.WordNet.version [033]
+file	readability
+Account.java	0.7814724120226774
+AccountType.java	0.5954579532146453
+AdminAccount.java	0.9558221101760864
+CommercialAccount.java	0.9863743782043457
+IndividualAccount.java	0.976115882396698
+AuditLogger.java	0.5632003396749496
+BankSystem.java	0.618797724445661
+CurrencyConverter.java	0.5700710415840149
+CustomExceptions.java	0.6766066551208496
+AbstractCBankWindow.java	0.7145990133285522
+CBankGUI.java	0.4370654635131359
+DashBoardWindow.java	0.6464098493258158
+LoginWindow.java	0.7072670857111613
+Transaction.java	0.6470267474651337
+AccountDatabase.java	0.7488093972206116
+CurrencyDatabase.java	0.5313838124275208
