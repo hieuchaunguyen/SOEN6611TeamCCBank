@@ -1,0 +1,65 @@
+CBank V2.0 | BankSystem JUnit 5 | D2 Problem 4(b)
+Fresh singleton for each test; results determined by JUnit.
+
+TC-B11 | Exception | Expected: InvalidPinException | Actual: InvalidPinException
+TC-B11 | Old PIN valid | Expected: true | Actual: true
+RESULT: PASS | test11InvalidPinChange
+
+TC-B01 | Account number | Expected: 1001 | Actual: 1001
+RESULT: PASS | test01ValidLogin
+
+TC-B08 | Account balance | Expected: CAD 1600.00 | Actual: CAD 1600.00
+TC-B08 | Vault balance | Expected: CAD 5100.00 | Actual: CAD 5100.00
+RESULT: PASS | test08CadDeposit
+
+TC-B15 | Vault balance | Expected: CAD 5500.00 | Actual: CAD 5500.00
+RESULT: PASS | test15AdminReplenishesVault
+
+TC-B02 | Exception | Expected: AuthenticationException | Actual: AuthenticationException
+TC-B02 | Session | Expected: null | Actual: null
+RESULT: PASS | test02WrongPin
+
+TC-B06 | Exception | Expected: InsufficientFundsException | Actual: InsufficientFundsException
+TC-B06 | Account balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+TC-B06 | Vault balance | Expected: CAD 5000.00 | Actual: CAD 5000.00
+RESULT: PASS | test06InsufficientFunds
+
+TC-B12 | New PIN valid | Expected: true | Actual: true
+TC-B12 | Old PIN valid | Expected: false | Actual: false
+RESULT: PASS | test12ValidPinChange
+
+TC-B04 | Session after logout | Expected: null | Actual: null
+RESULT: PASS | test04Logout
+
+TC-B14 | Exception | Expected: SecurityException | Actual: SecurityException
+TC-B14 | Vault balance | Expected: CAD 5000.00 | Actual: CAD 5000.00
+RESULT: PASS | test14CustomerCannotReplenishVault
+
+TC-B07 | Exception | Expected: VaultDepletedException | Actual: VaultDepletedException
+TC-B07 | Account balance | Expected: CAD 11500.00 | Actual: CAD 11500.00
+TC-B07 | Vault balance | Expected: CAD 15000.00 | Actual: CAD 15000.00
+RESULT: PASS | test07VaultDepleted
+
+TC-B16 | Audit contains LOGIN | Expected: true | Actual: true
+TC-B16 | Audit contains WITHDRAWAL | Expected: true | Actual: true
+RESULT: PASS | test16AdminReadsAuditLogs
+
+TC-B05 | Account balance | Expected: CAD 1300.00 | Actual: CAD 1300.00
+TC-B05 | Vault balance | Expected: CAD 4800.00 | Actual: CAD 4800.00
+RESULT: PASS | test05ValidWithdrawal
+
+TC-B09 | Account balance | Expected: CAD 1657.00 | Actual: CAD 1657.00
+TC-B09 | Vault balance | Expected: CAD 5000.00 | Actual: CAD 5000.00
+RESULT: PASS | test09EuroDeposit
+
+TC-B13 | Exception | Expected: SecurityException | Actual: SecurityException
+RESULT: PASS | test13CustomerCannotReadAuditLogs
+
+TC-B10 | Exception | Expected: IllegalArgumentException | Actual: IllegalArgumentException
+TC-B10 | Account balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+TC-B10 | Vault balance | Expected: CAD 5000.00 | Actual: CAD 5000.00
+RESULT: PASS | test10UnsupportedCurrency
+
+TC-B03 | Exception | Expected: AuthenticationException | Actual: AuthenticationException
+RESULT: PASS | test03UnknownAccount
+
