@@ -1,0 +1,74 @@
+CBank V2.0 | Account JUnit 5 | D2 Problem 4(b)
+Expected and actual values; PASS/FAIL is reported by JUnit 5.
+TC-A01 | Balance | Expected: CAD 1600.00 | Actual: CAD 1600.00
+RESULT: PASS | test01ValidDeposit()
+
+TC-A02 | Balance | Expected: CAD 1300.00 | Actual: CAD 1300.00
+RESULT: PASS | test02ValidWithdrawal()
+
+TC-A03 | Exception | Expected: InsufficientFundsException | Actual: InsufficientFundsException
+TC-A03 | Balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+RESULT: PASS | test03InsufficientFunds()
+
+TC-A04 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A04 | Balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+RESULT: PASS | test04NegativeDeposit()
+
+TC-A05 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A05 | Balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+RESULT: PASS | test05ZeroDeposit()
+
+TC-A06 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A06 | Balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+RESULT: PASS | test06NegativeWithdrawal()
+
+TC-A07 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A07 | Balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+RESULT: PASS | test07ZeroWithdrawal()
+
+TC-A08 | PIN | Expected: true/false | Actual: true/false
+RESULT: PASS | test08PinValidation()
+
+TC-A09 | Balance | Expected: CAD 3500.00 | Actual: CAD 3500.00
+RESULT: PASS | test09IndividualDepositAtLimit()
+
+TC-A10 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A10 | Balance | Expected: CAD 1500.00 | Actual: CAD 1500.00
+RESULT: PASS | test10IndividualDepositAboveLimit()
+
+TC-A11 | Balance | Expected: CAD 1000.00 | Actual: CAD 1000.00
+RESULT: PASS | test11IndividualWithdrawalAtLimit()
+
+TC-A12 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A12 | Balance | Expected: CAD 2000.00 | Actual: CAD 2000.00
+RESULT: PASS | test12IndividualWithdrawalAboveLimit()
+
+TC-A13 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A13 | Balance | Expected: CAD 3500.00 | Actual: CAD 3500.00
+RESULT: PASS | test13CumulativeDepositLimit()
+
+TC-A14 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A14 | Balance | Expected: CAD 1000.00 | Actual: CAD 1000.00
+RESULT: PASS | test14CumulativeWithdrawalLimit()
+
+TC-A15 | Balance | Expected: CAD 2500000.00 | Actual: CAD 2500000.00
+TC-A15 | Admin role | Expected: false | Actual: false
+RESULT: PASS | test15CommercialHigherLimits()
+
+TC-A16 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A16 | Balance | Expected: CAD 1500000.00 | Actual: CAD 1500000.00
+RESULT: PASS | test16CommercialDepositAboveLimit()
+
+TC-A17 | Exception | Expected: InvalidTransactionException | Actual: InvalidTransactionException
+TC-A17 | Balance | Expected: CAD 1500000.00 | Actual: CAD 1500000.00
+RESULT: PASS | test17CommercialWithdrawalAboveLimit()
+
+TC-A18 | Balance | Expected: CAD 6000000.00 | Actual: CAD 6000000.00
+TC-A18 | Admin role | Expected: true | Actual: true
+RESULT: PASS | test18AdminUnlimitedTransactions()
+
+TC-A19 | Individual limits | Expected: 2000/1000 | Actual: 2000.0/1000.0
+TC-A19 | Commercial limits | Expected: 2000000/1000000 | Actual: 2000000.0/1000000.0
+TC-A19 | Admin limits | Expected: -1/-1 | Actual: -1.0/-1.0
+RESULT: PASS | test19AccountLimitConfiguration()
+
