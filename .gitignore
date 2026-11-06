@@ -8,7 +8,7 @@
 *.class
 
 # Java archives generated during builds
-# Note: Keep the readability research tool rsm.jar
+# Preserve the published readability research tool
 *.jar
 !Tools/Readability/rsm.jar
 
@@ -17,20 +17,33 @@ out/
 build/
 target/
 bin/
+dist/
+nbbuild/
+nbdist/
 
 # IntelliJ IDEA
 .idea/
 *.iml
 *.ipr
 *.iws
-
-# VS Code local settings
-.vscode/
+.kotlin/
 
 # Eclipse
+.apt_generated/
 .classpath
+.factorypath
 .project
 .settings/
+.springBeans
+.sts4-cache/
+.metadata/
+
+# NetBeans
+nbproject/private/
+.nb-gradle/
+
+# VS Code
+.vscode/
 
 # Operating system files
 .DS_Store

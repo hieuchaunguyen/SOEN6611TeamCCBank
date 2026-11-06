@@ -129,9 +129,7 @@ class BankSystemTest {
         }
     }
 
-    /**
-     * TC-B01: Valid credentials authenticate the initialized commercial account.
-     */
+    /** TC-B01: Valid credentials authenticate the initialized commercial account. */
     @Test
     void test01ValidLogin() throws Exception {
         Account user = bank.login("1001", "1234");
@@ -140,9 +138,7 @@ class BankSystemTest {
         assertSame(user, bank.getCurrentSessionUser());
     }
 
-    /**
-     * TC-B02: Incorrect PIN must be rejected without starting a session.
-     */
+    /** TC-B02: Incorrect PIN must be rejected without starting a session. */
     @Test
     void test02WrongPin() {
         exception("TC-B02", CustomExceptions.AuthenticationException.class,
@@ -151,9 +147,7 @@ class BankSystemTest {
         assertNull(bank.getCurrentSessionUser());
     }
 
-    /**
-     * TC-B03: Unknown account number must not authenticate.
-     */
+    /** C-B03: Unknown account number must not authenticate. */
     @Test
     void test03UnknownAccount() {
         exception("TC-B03", CustomExceptions.AuthenticationException.class,
