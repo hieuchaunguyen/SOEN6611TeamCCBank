@@ -43,28 +43,28 @@ Current measurements:
 See [Readability/readability_analysis.md](Readability/readability_analysis.md)
 for the complete results, Mermaid charts, and interpretation.
 
-## Problem 4(b) — Testing
 
-Testing artifacts are stored in `TestResults/`.
+## Problem 4(b) — Automated Testing
 
-The existing automated tests are located under
-`Source/cbank/test/cbank/`.
+CBank V2.0 was tested using JUnit 5 and Maven.
 
-Test execution and results must be verified against
-the current CBank implementation before final reporting.
+| Test Suite | Passed |
+|---|---:|
+| AccountTest.java | 19 |
+| BankSystemTest.java | 16 |
+| **Total** | **35** |
 
-## Measurement Scope
+Final execution results:
 
-Production Java source code is located under:
+- Tests executed: 35
+- Failures: 0
+- Errors: 0
+- Skipped: 0
+- Pass rate: 100%
+- Maven build: BUILD SUCCESS
 
-`Source/cbank/src/`
+The test execution reports are stored in
+`Tools/TestResults/`.
 
-Test source files, compiled classes, and measurement
-utilities are excluded from production SLOC and
-readability measurements.
-
-All reported measurements apply to the current
-CBank implementation used during analysis.
-
-Measurements should be regenerated if the production
-source code changes.
+See [Testing Documentation](TestResults/README.md)
+for the execution procedure, results, and limitations.

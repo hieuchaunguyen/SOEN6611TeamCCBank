@@ -53,6 +53,53 @@ Tools/
 └── README.md
 ```
 
+## Problem 4(b) — CBank Automated Testing
+
+### Testing Framework
+
+CBank V2.0 uses JUnit 5 and Maven for automated unit testing.
+
+Test source files are located under:
+
+`Source/cbank/test/cbank/`
+
+### Test Suites
+
+| Test Suite | Tests Passed |
+|---|---:|
+| AccountTest.java | 19 |
+| BankSystemTest.java | 16 |
+| **Total** | **35** |
+
+### How to Run
+
+From the repository root containing `pom.xml`:
+
+```powershell
+mvn test
+```
+
+### Final Testing Results
+
+| Metric | Result |
+|---|---:|
+| Tests executed | 35 |
+| Tests passed | 35 |
+| Failures | 0 |
+| Errors | 0 |
+| Skipped | 0 |
+| Pass rate | 100% |
+| Maven status | BUILD SUCCESS |
+
+Pass Rate = (35 / 35) × 100 = 100%
+
+All 35 automated tests passed in the recorded execution.
+This does not imply 100% code coverage.
+
+### Supporting Documentation
+
+- [Testing Results](Tools/TestResults/README.md)
+
 ## Problem 5 — Physical and Logical SLOC
 
 ### Measurement Method
@@ -175,32 +222,7 @@ and interpretation of the measured scores.
 **Research tool:**
 https://dibt-research.unimol.it/report/readability/
 
-## Problem 4(b) — CBank Testing
 
-The existing automated test source files are located
-under:
-
-`Source/cbank/test/cbank/`
-
-These include:
-
-- `AccountTest.java`
-- `BankSystemTest.java`
-
-The test suites must be updated and executed against
-the current CBank implementation before finalizing
-the automated testing results.
-
-Previous test results are not treated as verified
-results for the current implementation.
-
-Testing evidence and execution reports are maintained
-under:
-
-`Tools/TestResults/`
-
-The final testing documentation will be updated
-after the current implementation has been tested.
 
 ## Notes
 

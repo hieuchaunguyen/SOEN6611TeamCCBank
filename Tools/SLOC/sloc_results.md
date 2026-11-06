@@ -1,6 +1,8 @@
 # CBank SLOC Measurement Results
 
-Measurement scope: production Java source files in `Source/cbank/src/cbank/`.
+Measurement scope: all 16 production Java source files
+recursively discovered under Source/cbank/src/,
+including the cbank and init packages.
 
 Counting rules are documented in `counting_scheme.md`.
 
@@ -34,7 +36,8 @@ Counting rules are documented in `counting_scheme.md`.
 
 ## Interpretation
 
-The application contains **562 Physical SLOC** and **310 Logical SLOC** under the documented measurement conventions.
+The application contains **562 Physical SLOC** and **310 Logical SLOC** under the documented 
+measurement conventions.
 
 `CBankGUI.java` has the highest Physical SLOC (144).
 

@@ -127,9 +127,11 @@ Java readability tool.
 The project-level readability is calculated using the
 arithmetic mean of the 16 file-level scores.
 
-\[
+
+$$
 R_{\text{avg}} = \frac{\sum_{i=1}^{n} R_i}{n}
-\]
+$$
+
 
 Where:
 
@@ -138,9 +140,9 @@ Where:
 
 For CBank V2.0:
 
-\[
-R_{\text{avg}} = \frac{11.15648}{16} = 0.6973
-\]
+$$
+R_{\text{avg}} = \frac{11.1564798658}{16} \approx 0.6973
+$$
 
 This is an **unweighted file average**: each source file
 contributes equally, regardless of its size or number
@@ -256,8 +258,6 @@ The readability scores range from:
 This variation indicates that the model predicts
 different levels of readability across the CBank
 source files.
-
-## 8. Limitations
 
 
 ## 8. Limitations
