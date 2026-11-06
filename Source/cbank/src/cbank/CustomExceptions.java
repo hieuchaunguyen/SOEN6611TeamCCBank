@@ -5,6 +5,9 @@ public class CustomExceptions {
         public InsufficientFundsException(String message) { super(message); }
     }
 
+    public static class InvalidTransactionException extends Exception{
+        public InvalidTransactionException(String message) { super(message); }
+    }
     public static class VaultDepletedException extends Exception {
         public VaultDepletedException(String message) { super(message); }
     }

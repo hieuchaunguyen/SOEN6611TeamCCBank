@@ -1,0 +1,57 @@
+
+# ==========================================
+# SOEN 6611 - CBank Project
+# Git Ignore Rules
+# ==========================================
+
+# Java compiled files
+*.class
+
+# Java archives generated during builds
+# Preserve the published readability research tool
+*.jar
+!Tools/Readability/rsm.jar
+
+# Build output directories
+out/
+build/
+target/
+bin/
+dist/
+nbbuild/
+nbdist/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+.kotlin/
+
+# Eclipse
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+.metadata/
+
+# NetBeans
+nbproject/private/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+*~

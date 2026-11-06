@@ -1,182 +1,126 @@
-# CBank Source Lines of Code (SLOC) Measurement
+
+# CBank V2.0 — Physical and Logical SLOC Counting Scheme
 
 **Course:** SOEN 6611 — Software Measurement  
 **Deliverable:** 2  
-**Problem:** 5 — Physical and Logical SLOC Measurement  
-**Application:** CBank (Java Banking Application)
+**Problem:** 5 — Source Lines of Code
 
-## 1. Objective
+## 1. Measurement Objective
 
-The objective of this measurement is to determine the Physical Source Lines of Code (Physical SLOC) and Logical Source Lines of Code (Logical SLOC) of the CBank application.
+Measure the size of the CBank V2.0 Java implementation using two metrics:
 
-The measurements provide quantitative information about the size of the application's production source code.
+- Physical Source Lines of Code (Physical SLOC)
+- Logical Source Lines of Code (Logical SLOC)
+
+The measurements are obtained using the custom Java analyzer `SLOCAnalyzer.java`.
 
 ## 2. Measurement Scope
 
-The measurement includes all seven production Java source files located in:
+The source directory is:
 
-`Source/cbank/src/cbank/`
+`Source/cbank/src/`
 
-The following files are included:
+The analyzer searches this directory recursively using `Files.walk()`.
 
-1. `Account.java`
-2. `AuditLogger.java`
-3. `BankSystem.java`
-4. `CBankGUI.java`
-5. `CurrencyConverter.java`
-6. `CustomExceptions.java`
-7. `Transaction.java`
+The measurement includes all 16 production Java files in the following packages:
 
-The measurement excludes test files, compiled `.class` files, measurement tools, IDE configuration files, and other nonproduction artifacts.
+- `cbank`
+- `cbank.account`
+- `cbank.gui`
+- `init`
 
-## 3. Physical SLOC Counting Scheme
+The following are excluded:
 
-Physical SLOC represents the number of nonblank physical source lines containing Java code.
+- Test source files
+- Compiled `.class` files
+- Blank lines
+- Comment-only lines (for Physical SLOC)
+- Measurement tools and generated reports
 
-**Counting rules:**
+## 3. Physical SLOC Counting Rules
 
-- Each physical line containing source code counts as one Physical SLOC.
-- Blank lines are excluded.
-- Single-line comment-only lines are excluded.
-- Block-comment-only lines are excluded.
-- Lines containing both source code and comments are counted.
-- A statement spanning multiple physical lines may contribute multiple Physical SLOC.
-- Lines containing braces or other Java syntax are counted if they contain source code.
+Physical SLOC counts the number of physical source lines containing Java code.
 
-The analyzer processes comments and string literals separately to avoid treating comment markers inside strings as actual comments.
+Rules:
 
-## 4. Logical SLOC Counting Scheme
+1. Each nonblank line containing source code contributes one Physical SLOC.
+2. Blank lines are excluded.
+3. Lines containing only `//` comments are excluded.
+4. Lines containing only block comments (`/* ... */`) are excluded.
+5. Lines containing code followed by an inline comment are counted.
+6. A line containing only a brace (`{` or `}`) is counted if it is not otherwise blank or comment-only.
+7. A statement spanning multiple physical lines contributes one count for each code-bearing physical line.
 
-Logical SLOC represents the number of selected Java source declarations and statements according to an explicitly defined counting convention.
+Physical SLOC is therefore a line-based measure rather than a statement count.
 
-The analyzer uses the Java Compiler API to construct an Abstract Syntax Tree (AST) and identify the relevant syntax constructs.
+## 4. Logical SLOC Counting Rules
 
-### Included constructs
+Logical SLOC counts selected Java declarations and executable statements using the Java compiler Abstract Syntax Tree (AST).
 
-- Field declarations.
-- Local variable declarations.
-- Expression statements, including assignments and method calls.
-- Return statements.
-- Throw statements.
-- Break and continue statements.
-- Assert statements.
-- Conditional statements (`if`).
-- Traditional and enhanced `for` loops.
-- `while` and `do-while` loops.
-- `switch` statements and switch expressions.
-- `try` statements.
-- Synchronized statements.
-- Labeled statements.
+The analyzer counts:
 
-Each included control statement counts as one logical unit. Statements inside its body are counted separately.
+- Variable declarations
+- Expression statements
+- Return statements
+- Throw statements
+- Break and continue statements
+- Assert statements
+- If statements
+- While and do-while statements
+- For and enhanced-for statements
+- Switch statements and switch expressions
+- Try statements
+- Synchronized statements
+- Labeled statements
 
-### Excluded constructs
+Counting conventions:
 
-- Package and import declarations.
-- Class, interface, enum, and method declarations.
-- Constructor declarations.
-- Method parameters.
-- Lambda parameters.
-- Catch-clause parameters.
-- Empty statements.
-- Standalone blocks.
-- Traditional `for`-loop initializer, condition, and update components as separate units.
-- Enhanced `for`-loop iteration variables as separate declarations.
-- Comments and whitespace.
+1. Each selected AST statement or declaration contributes one Logical SLOC.
+2. Class, interface, and method declarations are excluded.
+3. Method and catch parameters are excluded.
+4. For-loop headers are counted as one loop statement, avoiding separate counts for their initialization and update expressions.
+5. Nested executable statements are counted separately when they belong to the selected AST categories.
+6. Blank lines, comments, and formatting do not directly contribute to Logical SLOC.
 
-### Counting convention
+These conventions define a project-specific Logical SLOC measure. Other tools may report different totals because Logical SLOC counting conventions are not universal.
 
-The analyzer counts each traditional or enhanced `for` loop once, plus the statements within its body.
+## 5. Measurement Procedure
 
-A multiline statement counts as one logical unit when represented by one included AST statement node.
+**Requirements:** JDK 17 or newer.
 
-This is a project-specific, AST-based operational definition. Different SLOC tools may produce different Logical SLOC results because counting conventions vary.
-
-## 5. Measurement Tool
-
-A custom Java measurement tool, `SLOCAnalyzer.java`, was developed for this project.
-
-The analyzer:
-
-- Uses Java's standard file-handling APIs to read source files.
-- Uses the Java Compiler API to parse Java syntax.
-- Calculates Physical and Logical SLOC independently.
-- Measures only the production Java source directory.
-- Produces per-file measurements and overall totals.
-- Automatically overwrites previous result files.
-
-The tool requires JDK 17 or newer and does not require external dependencies.
-
-## 6. Compilation and Execution
-
-The analyzer is stored at:
-
-`Tools/SLOC/SLOCAnalyzer.java`
-
-Open the IntelliJ terminal from the repository root, which contains the `Source` and `Tools` directories.
-
-### Step 1 — Compile
+From the repository root, compile the analyzer:
 
 ```powershell
 javac -d Tools/SLOC Tools/SLOC/SLOCAnalyzer.java
 ```
 
-### Step 2 — Execute
+Run the analyzer:
 
 ```powershell
 java -cp Tools/SLOC SLOCAnalyzer
 ```
 
-### Step 3 — Locate the reports
-
-The analyzer automatically generates:
+The analyzer discovers production Java files recursively and generates:
 
 - `Tools/SLOC/sloc_results.csv`
 - `Tools/SLOC/sloc_results.md`
 
-Both files are overwritten whenever the analyzer runs.
+## 6. CBank V2.0 Measurement Results
 
-The CSV contains the measurements in a machine-readable format. The Markdown report contains the per-file measurements, total calculations, and interpretation.
+| Metric | Result |
+|---|---:|
+| Production Java files | 16 |
+| Physical SLOC | 562 |
+| Logical SLOC | 310 |
 
-## 7. Measurement Results
+The detailed per-file measurements are provided in `sloc_results.csv` and `sloc_results.md`.
 
-The latest calculated measurements are maintained in:
+## 7. Interpretation and Limitations
 
-**`sloc_results.md`**
+Physical SLOC measures the amount of code-bearing source text, whereas Logical SLOC measures selected declarations and statements.
 
-This report is automatically generated from the analyzer's output and contains:
+The Physical SLOC total is greater than the Logical SLOC total because Java statements may span multiple lines, and physical code lines may include braces and other syntax not counted as separate logical statements.
 
-- Physical SLOC for each Java source file.
-- Logical SLOC for each Java source file.
-- Total Physical SLOC.
-- Total Logical SLOC.
-- Explicit summation calculations.
-- A brief interpretation.
+SLOC is a software size metric. It does not directly measure software quality, maintainability, complexity, or developer productivity.
 
-Keeping the results in an automatically generated report avoids discrepancies between the source code, CSV output, and written calculations.
-
-## 8. Interpretation
-
-Physical SLOC and Logical SLOC measure different aspects of source-code size.
-
-Physical SLOC is sensitive to code formatting and line breaks, while Logical SLOC depends on the selected syntax constructs and the documented counting scheme.
-
-A source file with a higher SLOC value contains more measured code, but a higher SLOC value does not necessarily imply lower readability or poorer maintainability.
-
-Readability is evaluated separately in Problem 6.
-
-## 9. Limitations
-
-- The Logical SLOC count follows a documented AST-based convention rather than a universally standardized Java SLOC definition.
-- The analyzer is intended for the CBank production source files and has not been independently validated as a general-purpose Java metrics tool.
-- The counting convention may differ from other tools, particularly for complex expressions, declarations, and control-flow constructs.
-- Physical SLOC may change when source formatting changes, even if program behavior remains identical.
-- Results must be regenerated after changes to production source code.
-
-## 10. Reproducibility
-
-To reproduce the measurements, use JDK 17 or newer, open a terminal at the repository root, compile `SLOCAnalyzer.java`, and execute it using the commands in Section 6.
-
-The analyzer will process the current production Java files and regenerate both result reports.
-
-The generated `.class` files are build artifacts and should not be committed to version control.
+Both metrics depend on the documented counting conventions and the source-code version being analyzed.

@@ -36,7 +36,7 @@ import java.util.*;
 public class SLOCAnalyzer {
 
     private static final Path SOURCE_DIR =
-            Path.of("Source", "cbank", "src", "cbank");
+            Path.of("Source", "cbank", "src");
 
     private static final Path OUTPUT_DIR =
             Path.of("Tools", "SLOC");
@@ -60,12 +60,10 @@ public class SLOCAnalyzer {
 
         List<Path> javaFiles;
 
-        try (var stream = Files.list(SOURCE_DIR)) {
+        try (var stream = Files.walk(SOURCE_DIR)) {
             javaFiles = stream
                     .filter(Files::isRegularFile)
-                    .filter(path ->
-                            path.getFileName().toString()
-                                    .endsWith(".java"))
+                    .filter(path -> path.getFileName().toString().endsWith(".java"))
                     .sorted()
                     .toList();
         }

@@ -1,16 +1,17 @@
 package cbank;
 
+import init.CurrencyDatabase;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CurrencyConverter {
-    private final Map<String, Double> exchangeRatesToCad = new HashMap<>();
+    private final Map<String, Double> exchangeRatesToCad;
 
     public CurrencyConverter() {
-        exchangeRatesToCad.put("CAD", 1.00);
-        exchangeRatesToCad.put("USD", 1.35); // 1 USD = 1.35 CAD
-        exchangeRatesToCad.put("EUR", 1.48); // 1 EUR = 1.48 CAD
-        exchangeRatesToCad.put("GBP", 1.75); // 1 GBP = 1.75 CAD
+        exchangeRatesToCad = CurrencyDatabase.initializeDatabase();
     }
 
     public double convertToCad(double amount, String currencyCode) {
@@ -21,7 +22,14 @@ public class CurrencyConverter {
         return amount * exchangeRatesToCad.get(upper);
     }
 
-    public String[] getSupportedCurrencies() {
-        return exchangeRatesToCad.keySet().toArray(new String[0]);
+    public List<String> getSupportedCurrenciesInfo() {
+        return exchangeRatesToCad.keySet().stream()
+                .filter(k -> k.compareToIgnoreCase("CAD") != 0)
+                .map(k -> String.format("%s -> $%2f CAD",k,exchangeRatesToCad.get(k)))
+                .toList();
+    }
+
+    public String infoToCurrencies(String info){
+        return info.substring(0,3);
     }
 }

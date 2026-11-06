@@ -1,9 +1,18 @@
 File,Physical SLOC,Logical SLOC
-Account.java,32,24
+Account.java,38,22
+AccountType.java,47,26
+AdminAccount.java,7,1
+CommercialAccount.java,6,1
+IndividualAccount.java,7,1
 AuditLogger.java,13,3
-BankSystem.java,76,50
-CBankGUI.java,166,123
-CurrencyConverter.java,22,10
-CustomExceptions.java,15,4
+BankSystem.java,79,48
+CurrencyConverter.java,28,8
+CustomExceptions.java,18,5
+AbstractCBankWindow.java,10,2
+CBankGUI.java,144,87
+DashBoardWindow.java,72,58
+LoginWindow.java,40,24
 Transaction.java,22,11
-TOTAL,346,225
+AccountDatabase.java,16,5
+CurrencyDatabase.java,15,8
+TOTAL,562,310

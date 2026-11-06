@@ -1,351 +1,273 @@
-
 package cbank;
 
+import cbank.account.Account;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.Locale;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
- * Integration tests for CBank's BankSystem.
- *
  * SOEN 6611 - Deliverable 2 - Problem 4(b)
+ * CBank V2.0 BankSystem integration tests (JUnit 5).
  *
- * Tests authentication, transactions, vault balances,
- * PIN management, and administrator authorization.
+ * Purpose: verify authentication, sessions, deposits, withdrawals,
+ * currency handling, PIN changes, cash-vault rules and admin access.
  *
- * Uses the representative accounts initialized by BankSystem.
- * Tests execute sequentially because BankSystem is a singleton.
+ * Test isolation: BankSystem is a singleton with mutable state. Before
+ * each test, its private static instance is cleared by reflection so the
+ * next getInstance() loads fresh database accounts and a CAD 5,000 vault.
+ * This reflection is confined to test code; production code is unchanged.
+ * Tests are run sequentially to avoid interference with this reset.
  *
- * Each test reports its expected and actual outcomes.
- * Results are automatically saved, replacing the previous report.
+ * Each test asserts expected behavior and logs expected/actual evidence.
+ * A TestWatcher writes PASS/FAIL only after JUnit decides the outcome.
  */
-public class BankSystemTest {
+@Execution(ExecutionMode.SAME_THREAD)
+@ExtendWith(BankSystemTest.ResultReporter.class)
+class BankSystemTest {
+    private static final double EPS = 0.001;
+    private static final Path REPORT = Path.of("Tools", "TestResults", "bank_system_junit_results.txt");
+    private BankSystem bank;
 
-    private static int passed = 0;
-    private static int failed = 0;
-
-    private static final double EPSILON = 0.001;
-
-    public static void main(String[] args) {
-
-        configureReport();
-
-        System.out.println("======================================");
-        System.out.println("CBank - BankSystem Integration Testing");
-        System.out.println("SOEN 6611 | D2 | Problem 4(b)");
-        System.out.println("======================================");
-
-        BankSystem bank = BankSystem.getInstance();
-
-        // TC-B01: Valid customer authentication.
-        run("TC-B01", "Valid customer login",
-                "Alice Smith authenticated", () -> {
-
-                    Account user = bank.login("1001", "1234");
-
-                    check(user != null
-                                    && user.getAccountNumber().equals("1001"),
-                            "Incorrect authenticated account");
-
-                    return user.getAccountName() + " authenticated";
-                });
-
-        // TC-B02: Invalid authentication must be rejected.
-        run("TC-B02", "Invalid PIN",
-                "AuthenticationException", () -> {
-
-                    String exception = expectException(
-                            CustomExceptions.AuthenticationException.class,
-                            () -> bank.login("1001", "9999")
-                    );
-
-                    return exception;
-                });
-
-        // Restore the customer session after invalid login.
-        // This is setup, not a separate test result.
-        try {
-            bank.logout();
-            bank.login("1001", "1234");
-        } catch (Exception e) {
-            System.err.println("Test setup failed: " + e);
-            System.exit(1);
-        }
-
-        // TC-B03: A valid withdrawal reduces both balances.
-        run("TC-B03", "Withdraw CAD 200",
-                "Account = CAD 1300.00; Vault = CAD 4800.00",
-                () -> {
-
-                    bank.withdrawCash(200);
-
-                    checkBalance(
-                            bank.getCurrentSessionUser().getBalanceCad(),
-                            1300
-                    );
-
-                    checkBalance(bank.getMachineCashVaultCad(), 4800);
-
-                    return balances(bank);
-                });
-
-        // TC-B04: Reject a withdrawal exceeding account funds.
-        run("TC-B04", "Insufficient account funds",
-                "InsufficientFundsException; balances unchanged",
-                () -> {
-
-                    String exception = expectException(
-                            CustomExceptions.InsufficientFundsException.class,
-                            () -> bank.withdrawCash(2000)
-                    );
-
-                    checkBalance(
-                            bank.getCurrentSessionUser().getBalanceCad(),
-                            1300
-                    );
-                    checkBalance(bank.getMachineCashVaultCad(), 4800);
-
-                    return exception + "; " + balances(bank);
-                });
-
-        // TC-B05: CAD deposit credits account and CAD vault.
-        run("TC-B05", "Deposit CAD 100",
-                "Account = CAD 1400.00; Vault = CAD 4900.00",
-                () -> {
-
-                    bank.depositCash(100, "CAD");
-
-                    checkBalance(
-                            bank.getCurrentSessionUser().getBalanceCad(),
-                            1400
-                    );
-                    checkBalance(bank.getMachineCashVaultCad(), 4900);
-
-                    return balances(bank);
-                });
-
-        // TC-B06: Invalid PIN format must be rejected.
-        run("TC-B06", "Change PIN to three digits",
-                "InvalidPinException", () -> {
-
-                    return expectException(
-                            CustomExceptions.InvalidPinException.class,
-                            () -> bank.changePin("123")
-                    );
-                });
-
-        // TC-B07: A valid PIN change must take effect.
-        run("TC-B07", "Change PIN to 4321",
-                "New PIN accepted; old PIN rejected", () -> {
-
-                    bank.changePin("4321");
-
-                    Account user = bank.getCurrentSessionUser();
-
-                    check(user.validatePin("4321"),
-                            "New PIN was rejected");
-                    check(!user.validatePin("1234"),
-                            "Old PIN remains valid");
-
-                    return "New PIN accepted; old PIN rejected";
-                });
-
-        // TC-B08: Customer must not access admin audit logs.
-        run("TC-B08", "Customer requests audit logs",
-                "SecurityException", () -> {
-
-                    return expectException(
-                            SecurityException.class,
-                            bank::getAuditLogsFormatted
-                    );
-                });
-
-        // TC-B09: Customer must not replenish the vault.
-        run("TC-B09", "Customer replenishes vault",
-                "SecurityException; vault unchanged", () -> {
-
-                    String exception = expectException(
-                            SecurityException.class,
-                            () -> bank.adminReplenishVault(100)
-                    );
-
-                    checkBalance(bank.getMachineCashVaultCad(), 4900);
-
-                    return exception + "; vault unchanged";
-                });
-
-        // TC-B10: Administrator can replenish the cash vault.
-        run("TC-B10", "Admin replenishes CAD 500",
-                "Vault = CAD 5400.00", () -> {
-
-                    bank.logout();
-                    bank.login("9999", "0000");
-                    bank.adminReplenishVault(500);
-
-                    checkBalance(bank.getMachineCashVaultCad(), 5400);
-
-                    return String.format(
-                            Locale.US,
-                            "Vault = CAD %.2f",
-                            bank.getMachineCashVaultCad()
-                    );
-                });
-
-        bank.logout();
-
-        System.out.println("\n======================================");
-        System.out.println("TEST EXECUTION SUMMARY");
-        System.out.println("Total tests : " + (passed + failed));
-        System.out.println("Passed      : " + passed);
-        System.out.println("Failed      : " + failed);
-        System.out.println("======================================");
-
-        if (failed > 0) {
-            System.exit(1);
-        }
+    /**
+     * Create the evidence report before any tests execute.
+     */
+    @BeforeAll
+    static void initializeReport() throws IOException {
+        Files.createDirectories(REPORT.getParent());
+        Files.writeString(REPORT,
+                "CBank V2.0 | BankSystem JUnit 5 | D2 Problem 4(b)\n" +
+                        "Fresh singleton for each test; results determined by JUnit.\n\n",
+                StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     /**
-     * Redirects output to both the IntelliJ console and a
-     * report file. Existing report content is overwritten.
-     *
-     * Requires the working directory to be the repository root.
+     * Restore a clean BankSystem, including database, vault and session.
      */
-    private static void configureReport() {
+    @BeforeEach
+    void resetBank() throws Exception {
+        Field singleton = BankSystem.class.getDeclaredField("instance");
+        singleton.setAccessible(true);
+        singleton.set(null, null);
+        bank = BankSystem.getInstance();
+    }
+
+    /**
+     * Write a test's expected and actual observation to console and file.
+     */
+    private static synchronized void evidence(String id, String label, Object expected, Object actual) {
+        String line = String.format(Locale.US, "%s | %s | Expected: %s | Actual: %s%n",
+                id, label, expected, actual);
+        System.out.print(line);
         try {
-            Path directory = Path.of("Tools", "TestResults");
-            Files.createDirectories(directory);
-
-            Path file = directory.resolve(
-                    "bank_system_test_results.txt"
-            );
-
-            PrintStream console = System.out;
-            PrintStream report = new PrintStream(
-                    Files.newOutputStream(file),
-                    true,
-                    StandardCharsets.UTF_8
-            );
-
-            System.setOut(new PrintStream(
-                    new OutputStream() {
-                        @Override
-                        public void write(int b) {
-                            console.write(b);
-                            report.write(b);
-                        }
-
-                        @Override
-                        public void flush() {
-                            console.flush();
-                            report.flush();
-                        }
-                    },
-                    true,
-                    StandardCharsets.UTF_8
-            ));
-
+            Files.writeString(REPORT, line, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Unable to create test report", e
-            );
+            throw new IllegalStateException("Unable to save test evidence", e);
         }
     }
 
     /**
-     * Checks a numeric balance using a small tolerance.
+     * Verify a numeric result and print its observed value.
      */
-    private static void checkBalance(
-            double actual, double expected
-    ) {
-        check(
-                Math.abs(actual - expected) < EPSILON,
-                "Expected " + expected + ", received " + actual
-        );
+    private static void balance(String id, String label, double expected, double actual) {
+        evidence(id, label, String.format(Locale.US, "CAD %.2f", expected),
+                String.format(Locale.US, "CAD %.2f", actual));
+        assertEquals(expected, actual, EPS);
     }
 
     /**
-     * Checks a test assertion.
+     * Verify the exception type and record the observed exception.
      */
-    private static void check(
-            boolean condition, String message
-    ) {
-        if (!condition) {
-            throw new AssertionError(message);
-        }
+    private static <T extends Throwable> T exception(String id, Class<T> type, ExecutableAction action) {
+        T caught = assertThrows(type, action::run);
+        evidence(id, "Exception", type.getSimpleName(), caught.getClass().getSimpleName());
+        return caught;
+    }
+
+    @FunctionalInterface
+    private interface ExecutableAction {
+        void run() throws Throwable;
     }
 
     /**
-     * Confirms that the expected exception is thrown.
+     * Record the JUnit outcome, rather than assuming a printed value means PASS.
      */
-    private static String expectException(
-            Class<? extends Throwable> expected,
-            TestAction action
-    ) throws Exception {
-        try {
-            action.execute();
-        } catch (Throwable e) {
-            if (expected.isInstance(e)) {
-                return e.getClass().getSimpleName();
+    static class ResultReporter implements TestWatcher {
+        private void write(String result, ExtensionContext context) {
+            String line = "RESULT: " + result + " | " + context.getRequiredTestMethod().getName() + "\n\n";
+            System.out.print(line);
+            try {
+                Files.writeString(REPORT, line, StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                System.err.println("Could not save JUnit result: " + e.getMessage());
             }
-
-            throw new AssertionError(
-                    "Unexpected exception: " + e
-            );
         }
 
-        throw new AssertionError(
-                "Expected " + expected.getSimpleName()
-        );
-    }
+        @Override
+        public void testSuccessful(ExtensionContext context) {
+            write("PASS", context);
+        }
 
-    /**
-     * Formats the current customer and vault balances.
-     */
-    private static String balances(BankSystem bank) {
-        return String.format(
-                Locale.US,
-                "Account = CAD %.2f; Vault = CAD %.2f",
-                bank.getCurrentSessionUser().getBalanceCad(),
-                bank.getMachineCashVaultCad()
-        );
-    }
+        @Override
+        public void testFailed(ExtensionContext context, Throwable cause) {
+            write("FAIL: " + cause, context);
+        }
 
-    /**
-     * Executes and reports an individual integration test.
-     */
-    private static void run(
-            String id,
-            String description,
-            String expected,
-            TestCase test
-    ) {
-        System.out.println("\n" + id + " - " + description);
-        System.out.println("Expected: " + expected);
-
-        try {
-            String actual = test.execute();
-            System.out.println("Actual  : " + actual);
-            System.out.println("Result  : PASS");
-            passed++;
-        } catch (Throwable e) {
-            System.out.println("Actual  : " + e);
-            System.out.println("Result  : FAIL");
-            failed++;
+        @Override
+        public void testAborted(ExtensionContext context, Throwable cause) {
+            write("ABORTED: " + cause, context);
         }
     }
 
-    @FunctionalInterface
-    private interface TestAction {
-        void execute() throws Exception;
+    /** TC-B01: Valid credentials authenticate the initialized commercial account. */
+    @Test
+    void test01ValidLogin() throws Exception {
+        Account user = bank.login("1001", "1234");
+        evidence("TC-B01", "Account number", "1001", user.getAccountNumber());
+        assertEquals("1001", user.getAccountNumber());
+        assertSame(user, bank.getCurrentSessionUser());
     }
 
-    @FunctionalInterface
-    private interface TestCase {
-        String execute() throws Exception;
+    /** TC-B02: Incorrect PIN must be rejected without starting a session. */
+    @Test
+    void test02WrongPin() {
+        exception("TC-B02", CustomExceptions.AuthenticationException.class,
+                () -> bank.login("1001", "9999"));
+        evidence("TC-B02", "Session", "null", bank.getCurrentSessionUser());
+        assertNull(bank.getCurrentSessionUser());
+    }
+
+    /** C-B03: Unknown account number must not authenticate. */
+    @Test
+    void test03UnknownAccount() {
+        exception("TC-B03", CustomExceptions.AuthenticationException.class,
+                () -> bank.login("0000", "1234"));
+        assertNull(bank.getCurrentSessionUser());
+    }
+
+    /** TC-B04: Logging out clears the active session. */
+    @Test void test04Logout() throws Exception {
+        bank.login("1001", "1234");
+        bank.logout();
+        evidence("TC-B04", "Session after logout", "null", bank.getCurrentSessionUser());
+        assertNull(bank.getCurrentSessionUser());
+    }
+
+    /** TC-B05: A valid withdrawal reduces account and physical vault cash. */
+    @Test void test05ValidWithdrawal() throws Exception {
+        bank.login("1001", "1234");
+        bank.withdrawCash(200);
+        balance("TC-B05", "Account balance", 1300, bank.getCurrentSessionUser().getBalanceCad());
+        balance("TC-B05", "Vault balance", 4800, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B06: Insufficient account funds must not change either balance. */
+    @Test void test06InsufficientFunds() throws Exception {
+        bank.login("1001", "1234");
+        exception("TC-B06", CustomExceptions.InsufficientFundsException.class,
+                () -> bank.withdrawCash(2000));
+        balance("TC-B06", "Account balance", 1500, bank.getCurrentSessionUser().getBalanceCad());
+        balance("TC-B06", "Vault balance", 5000, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B07: A withdrawal above vault cash must be rejected even for an admin with funds. */
+    @Test void test07VaultDepleted() throws Exception {
+        bank.login("1001", "1234");
+        bank.depositCash(10000, "CAD"); // Commercial account permits this deposit; vault becomes 15000.
+        exception("TC-B07", CustomExceptions.VaultDepletedException.class,
+                () -> bank.withdrawCash(15000.01));
+        balance("TC-B07", "Account balance", 11500, bank.getCurrentSessionUser().getBalanceCad());
+        balance("TC-B07", "Vault balance", 15000, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B08: CAD cash deposit increases both customer balance and physical vault. */
+    @Test void test08CadDeposit() throws Exception {
+        bank.login("1001", "1234");
+        bank.depositCash(100, "CAD");
+        balance("TC-B08", "Account balance", 1600, bank.getCurrentSessionUser().getBalanceCad());
+        balance("TC-B08", "Vault balance", 5100, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B09: EUR is converted using the stored 1.57 rate, without adding CAD cash to vault. */
+    @Test void test09EuroDeposit() throws Exception {
+        bank.login("1001", "1234");
+        bank.depositCash(100, "EUR");
+        balance("TC-B09", "Account balance", 1657, bank.getCurrentSessionUser().getBalanceCad());
+        balance("TC-B09", "Vault balance", 5000, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B10: An unsupported currency must be rejected with unchanged balances. */
+    @Test void test10UnsupportedCurrency() throws Exception {
+        bank.login("1001", "1234");
+        exception("TC-B10", IllegalArgumentException.class,
+                () -> bank.depositCash(100, "XYZ"));
+        balance("TC-B10", "Account balance", 1500, bank.getCurrentSessionUser().getBalanceCad());
+        balance("TC-B10", "Vault balance", 5000, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B11: An invalid PIN length is rejected and the old PIN remains valid. */
+    @Test void test11InvalidPinChange() throws Exception {
+        bank.login("1001", "1234");
+        exception("TC-B11", CustomExceptions.InvalidPinException.class,
+                () -> bank.changePin("123"));
+        evidence("TC-B11", "Old PIN valid", true, bank.getCurrentSessionUser().validatePin("1234"));
+        assertTrue(bank.getCurrentSessionUser().validatePin("1234"));
+    }
+
+    /** TC-B12: A valid four-digit PIN replaces the old one. */
+    @Test void test12ValidPinChange() throws Exception {
+        bank.login("1001", "1234");
+        bank.changePin("4321");
+        Account user = bank.getCurrentSessionUser();
+        evidence("TC-B12", "New PIN valid", true, user.validatePin("4321"));
+        evidence("TC-B12", "Old PIN valid", false, user.validatePin("1234"));
+        assertTrue(user.validatePin("4321"));
+        assertFalse(user.validatePin("1234"));
+        bank.logout();
+        assertSame(user, bank.login("1001", "4321"));
+    }
+
+    /** TC-B13: A normal customer cannot retrieve administrative audit logs. */
+    @Test void test13CustomerCannotReadAuditLogs() throws Exception {
+        bank.login("1001", "1234");
+        exception("TC-B13", SecurityException.class, bank::getAuditLogsFormatted);
+    }
+
+    /** TC-B14: A normal customer cannot replenish physical vault cash. */
+    @Test void test14CustomerCannotReplenishVault() throws Exception {
+        bank.login("1001", "1234");
+        exception("TC-B14", SecurityException.class,
+                () -> bank.adminReplenishVault(500));
+        balance("TC-B14", "Vault balance", 5000, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B15: Admin may replenish vault cash by a valid positive amount. */
+    @Test void test15AdminReplenishesVault() throws Exception {
+        bank.login("9999", "0000");
+        bank.adminReplenishVault(500);
+        balance("TC-B15", "Vault balance", 5500, bank.getMachineCashVaultCad());
+    }
+
+    /** TC-B16: Admin audit logs include successful login and withdrawal records. */
+    @Test void test16AdminReadsAuditLogs() throws Exception {
+        bank.login("1001", "1234");
+        bank.withdrawCash(100);
+        bank.logout();
+        bank.login("9999", "0000");
+        String logs = bank.getAuditLogsFormatted();
+        evidence("TC-B16", "Audit contains LOGIN", true, logs.contains("LOGIN"));
+        evidence("TC-B16", "Audit contains WITHDRAWAL", true, logs.contains("WITHDRAWAL"));
+        assertTrue(logs.contains("LOGIN"));
+        assertTrue(logs.contains("WITHDRAWAL"));
     }
 }
